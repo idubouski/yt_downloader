@@ -1,0 +1,5 @@
+{
+  "download_folder": "downloads",
+  "default_resolution": "1080",
+  "output_template": "%(title)s.%(ext)s"
+}
