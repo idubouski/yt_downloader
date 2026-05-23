@@ -3,8 +3,10 @@ FROM python:3.12-slim-bookworm
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get install -y --no-install-recommends ffmpeg ca-certificates curl unzip \
+    && curl -fsSL https://deno.land/install.sh | DENO_INSTALL=/usr/local sh -s -- --no-modify-path -y \
+    && apt-get purge -y --auto-remove curl unzip \
+    && rm -rf /var/lib/apt/lists/* /root/.cache
 
 WORKDIR /app
 

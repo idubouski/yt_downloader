@@ -42,12 +42,21 @@ def _cookie_file(cookies_text: str | None):
             pass
 
 
+def _base_opts(cookiefile: str | None) -> dict:
+    opts = {
+        "noplaylist": True,
+        "quiet": True,
+        "no_warnings": True,
+        "remote_components": {"ejs:github"},
+    }
+    if cookiefile:
+        opts["cookiefile"] = cookiefile
+    return opts
+
+
 def get_video_info(url: str, cookies_text: str | None = None) -> dict:
     with _cookie_file(cookies_text) as cookiefile:
-        ydl_opts = {"noplaylist": True, "quiet": True, "no_warnings": True}
-        if cookiefile:
-            ydl_opts["cookiefile"] = cookiefile
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        with yt_dlp.YoutubeDL(_base_opts(cookiefile)) as ydl:
             info = ydl.extract_info(url, download=False)
             resolutions = {
                 f["height"]
@@ -69,20 +78,18 @@ def download_video(url: str, resolution: str | None = None, cookies_text: str | 
 
     format_string = (
         f"bestvideo[height<={target_res}][ext=mp4]+bestaudio[ext=m4a]/"
-        f"best[height<={target_res}][ext=mp4]/"
-        f"best[ext=mp4]"
+        f"bestvideo[height<={target_res}]+bestaudio/"
+        f"best[height<={target_res}]/"
+        f"best"
     )
 
     with _cookie_file(cookies_text) as cookiefile:
         ydl_opts = {
+            **_base_opts(cookiefile),
             "format": format_string,
             "merge_output_format": "mp4",
             "outtmpl": str(download_path / template),
-            "noplaylist": True,
-            "quiet": True,
         }
-        if cookiefile:
-            ydl_opts["cookiefile"] = cookiefile
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
